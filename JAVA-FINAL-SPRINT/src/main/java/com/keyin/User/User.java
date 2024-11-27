@@ -5,19 +5,22 @@ public class User {
     private String username;
     private String password;
     private String email;
+    private String role;
 
     // CONSTRUCTORS
-    public User(int user_id, String user_name, String password, String email) {
+    public User(int user_id, String user_name, String password, String email, String role) {
         this.user_id = user_id;
         this.username = user_name;
         this.password = password;
         this.email = email;
+        this.role = role;
     }
 
-    public User(String username, String password, String email) {
+    public User(String username, String password, String email, String role) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.role = role;
     }
 
     // GETTERS
@@ -37,6 +40,10 @@ public class User {
         return email;
     }
 
+    public String getRole() {
+        return role;
+    }
+
     // SETTERS
     public void setUser_id(int user_id) {
         this.user_id = user_id;
@@ -52,5 +59,9 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
