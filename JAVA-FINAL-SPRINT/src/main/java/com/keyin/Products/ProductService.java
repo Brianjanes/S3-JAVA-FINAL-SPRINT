@@ -30,14 +30,14 @@ public class ProductService {
      * @param description A detailed description of the product (non-null, non-empty)
      * @param price       The price of the product (must be greater than 0)
      * @param quantity    The initial stock quantity (must be 0 or positive)
-     * @param seller      The user creating the product (must have SELLER role)
+     * @param seller      The user creating the product (must have seller role)
      * @return The created Product object with generated ID
      * @throws SQLException If a database error occurs
      * @throws IllegalArgumentException If any validation fails or user is not a seller
      */
     public Product createProduct(String name, String description, double price,
                                  int quantity, User seller) throws SQLException {
-        if (!"SELLER".equals(seller.getRole())) {
+        if (!"seller".equals(seller.getRole())) {
             throw new IllegalArgumentException("Only sellers can create products");
         }
 
