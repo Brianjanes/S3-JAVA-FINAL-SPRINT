@@ -70,21 +70,23 @@ public class EcommApp {
     }
 
     private boolean handleLogin() {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+        try {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
 
-        currentUser = userService.login(username, password);
-        if (currentUser != null) {
+            currentUser = userService.login(username, password);
             System.out.println("Login successful!");
             return true;
-        } else {
-            System.out.println("Invalid credentials!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Login failed: " + e.getMessage());
+            return false;
+        } catch (RuntimeException e) {
+            System.out.println("System error: " + e.getMessage());
             return false;
         }
     }
-
     private boolean handleSignUp() {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
@@ -100,24 +102,25 @@ public class EcommApp {
         System.out.print("Choose role: ");
 
         int roleChoice = getInput();
-        User newUser = switch (roleChoice) {
-            case 1 -> new Buyer(username, password, email);
-            case 2 -> new Seller(username, password, email);
-            case 3 -> new Admin(username, password, email);
+        String role = switch (roleChoice) {
+            case 1 -> "buyer";
+            case 2 -> "seller";
+            case 3 -> "admin";
             default -> {
                 System.out.println("Invalid role selection!");
                 yield null;
             }
         };
 
-        if (newUser != null) {
-            currentUser = userService.registerUser(newUser);
-            if (currentUser != null) {
+        if (role != null) {
+            try {
+                currentUser = userService.registerUser(username, password, email, role);
                 System.out.println("Registration successful!");
                 return true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Registration failed: " + e.getMessage());
             }
         }
-        System.out.println("Registration failed!");
         return false;
     }
 
