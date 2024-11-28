@@ -1,18 +1,6 @@
 package com.keyin.User;
 
-// this is just to test the DB user creation.
-// to run multiple times you need to change the username i think.
-// if you want to query run this in PGadmin:
-
-//-- View all users
-//SELECT * FROM users;
-//
-//-- View specific user
-//SELECT * FROM users WHERE username = 'testuser';
-//
-//-- View roles
-//SELECT DISTINCT role FROM users;
-
+import com.keyin.Roles.*;
 
 public class UserSystemTest {
     public static void main(String[] args) {
@@ -21,8 +9,9 @@ public class UserSystemTest {
 
         try {
             // Test registration
-            User newUser = userService.registerUser("testuser", "password123", "test@example.com", "buyer");
-            System.out.println("User registered: " + newUser.getUsername());
+            User newUser = new Buyer("testuser", "password123", "test@example.com");
+            User registeredUser = userService.registerUser(newUser);
+            System.out.println("User registered: " + registeredUser.getUsername());
 
             // Test login
             User loggedInUser = userService.login("testuser", "password123");
