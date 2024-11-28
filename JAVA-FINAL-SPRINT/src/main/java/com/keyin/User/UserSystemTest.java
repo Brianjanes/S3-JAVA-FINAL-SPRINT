@@ -8,9 +8,8 @@ public class UserSystemTest {
         UserService userService = new UserService(userDAO);
 
         try {
-            // Test registration
-            User newUser = new Buyer("testuser", "password123", "test@example.com");
-            User registeredUser = userService.registerUser(newUser);
+            // Test registration with individual fields instead of User object
+            User registeredUser = userService.registerUser("testuser", "password123", "test@example.com", "buyer");
             System.out.println("User registered: " + registeredUser.getUsername());
 
             // Test login

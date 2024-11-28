@@ -3,6 +3,8 @@ package com.keyin;
 import com.keyin.User.*;
 import com.keyin.Roles.*;
 import com.keyin.Products.*;
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.Scanner;
 import java.util.List;
 
@@ -125,11 +127,11 @@ public class EcommApp {
     }
 
     private void showRoleSpecificMenu() {
-        switch (currentUser.getRole()) {
+        switch (currentUser.getRole().toLowerCase()) {  // Add toLowerCase()
             case "buyer" -> showBuyerMenu();
             case "seller" -> showSellerMenu();
             case "admin" -> showAdminMenu();
-            default -> System.out.println("Invalid role!");
+            default -> System.out.println("Invalid role: " + currentUser.getRole());  // Added role info for debugging
         }
     }
 

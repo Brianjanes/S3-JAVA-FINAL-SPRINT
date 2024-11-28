@@ -45,28 +45,11 @@ public class UserService {
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
 
-        return registerUser(user);
-    }
-
-    /**
-     * Registers a new user with pre-constructed User object.
-     *
-     * @param user User object containing registration information
-     * @return Registered user with ID
-     * @throws IllegalArgumentException if validation fails
-     * @throws RuntimeException if database operation fails
-     */
-    public User registerUser(User user) {
         try {
-            validateUserData(user);
-            User existingUser = userDAO.getUserByUsername(user.getUsername());
-
+            User existingUser = userDAO.getUserByUsername(username);
             if (existingUser != null) {
                 throw new IllegalArgumentException("Username already exists");
             }
-
-            String hashedPassword = hashPassword(user.getPassword());
-            user.setPassword(hashedPassword);
             return userDAO.createUser(user);
         } catch (SQLException e) {
             throw new RuntimeException("Database error during registration: " + e.getMessage());
@@ -84,20 +67,24 @@ public class UserService {
      */
     public User login(String username, String password) {
         try {
-            if (username == null || password == null) {
-                throw new IllegalArgumentException("Username and password cannot be null");
+            if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+                throw new IllegalArgumentException("Username and password cannot be empty");
             }
 
             User user = userDAO.getUserByUsername(username);
-            if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            boolean matches = BCrypt.checkpw(password, user.getPassword());
+            if (matches) {
                 return convertToRoleSpecificUser(user);
             }
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new IllegalArgumentException("Invalid password");
         } catch (SQLException e) {
             throw new RuntimeException("Database error during login: " + e.getMessage());
         }
     }
-
     /**
      * Retrieves all users from database.
      *
