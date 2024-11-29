@@ -10,7 +10,7 @@ import java.util.List;
  * This class provides an abstraction layer between the application and the database,
  * implementing CRUD (Create, Read, Update, Delete) operations for products.
  *
- * @author @author Kyle Hollett, Brad Ayers, Brian Janes
+ * @author Kyle Hollett, Brad Ayers, Brian Janes
  * @version 1.0
  * @since 2024-11-27
  */
@@ -47,11 +47,16 @@ public class ProductDAO {
             stmt.setInt(4, product.getQuantity());
             stmt.setInt(5, product.getSeller_id());
 
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                product.setProduct_id(rs.getInt("product_id"));
-                return product;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    product.setProduct_id(rs.getInt("product_id"));
+                    return product;
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Error retrieving generated ID: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            throw new SQLException("Error creating product: " + e.getMessage());
         }
         return null;
     }
@@ -68,18 +73,22 @@ public class ProductDAO {
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, productId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return new Product(
-                        rs.getInt("product_id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getDouble("price"),
-                        rs.getInt("quantity"),
-                        rs.getInt("seller_id")
-                );
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Product(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity"),
+                            rs.getInt("seller_id")
+                    );
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Error reading product data: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            throw new SQLException("Error retrieving product: " + e.getMessage());
         }
         return null;
     }
@@ -94,18 +103,23 @@ public class ProductDAO {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM products";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                products.add(new Product(
-                        rs.getInt("product_id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getDouble("price"),
-                        rs.getInt("quantity"),
-                        rs.getInt("seller_id")
-                ));
+        try (Statement stmt = connection.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    products.add(new Product(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity"),
+                            rs.getInt("seller_id")
+                    ));
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Error reading products data: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            throw new SQLException("Error retrieving products: " + e.getMessage());
         }
         return products;
     }
@@ -123,18 +137,22 @@ public class ProductDAO {
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, sellerId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                products.add(new Product(
-                        rs.getInt("product_id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getDouble("price"),
-                        rs.getInt("quantity"),
-                        rs.getInt("seller_id")
-                ));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(new Product(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity"),
+                            rs.getInt("seller_id")
+                    ));
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Error reading seller's products: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            throw new SQLException("Error retrieving seller's products: " + e.getMessage());
         }
         return products;
     }
@@ -156,17 +174,22 @@ public class ProductDAO {
             stmt.setString(1, searchPattern);
             stmt.setString(2, searchPattern);
 
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                products.add(new Product(
-                        rs.getInt("product_id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getDouble("price"),
-                        rs.getInt("quantity"),
-                        rs.getInt("seller_id")
-                ));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(new Product(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity"),
+                            rs.getInt("seller_id")
+                    ));
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Error reading search results: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            throw new SQLException("Error searching products: " + e.getMessage());
         }
         return products;
     }
@@ -188,7 +211,13 @@ public class ProductDAO {
             stmt.setInt(4, product.getQuantity());
             stmt.setInt(5, product.getProduct_id());
 
-            return stmt.executeUpdate() > 0;
+            try {
+                return stmt.executeUpdate() > 0;
+            } catch (SQLException e) {
+                throw new SQLException("Error updating product data: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error preparing update statement: " + e.getMessage());
         }
     }
 
@@ -204,7 +233,13 @@ public class ProductDAO {
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, productId);
-            return stmt.executeUpdate() > 0;
+            try {
+                return stmt.executeUpdate() > 0;
+            } catch (SQLException e) {
+                throw new SQLException("Error deleting product: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error preparing delete statement: " + e.getMessage());
         }
     }
 }
