@@ -4,144 +4,134 @@ import com.keyin.User.*;
 import com.keyin.Roles.*;
 import com.keyin.Products.*;
 import org.mindrot.jbcrypt.BCrypt;
-import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.gui2.*;
-import com.googlecode.lanterna.screen.Screen;
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Help.Ansi;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.Callable;
 
 /**
- * Main application class for the E-Commerce platform.
+ * Main application class for the E-Commerce platform using picocli.
  *
  * @author Kyle Hollett, Brad Ayers, Brian Janes
  * @version 1.0
  * @since 2024-11-27
  */
+@Command(
+        name = "ecommerce-app",
+        description = "E-Commerce Platform CLI Application",
+        mixinStandardHelpOptions = true
+)
+public class EcommApp implements Callable<Integer> {
 
-public class EcommApp {
+    private final Scanner scanner;
     private final UserService userService;
     private final ProductService productService;
-    private final MultiWindowTextGUI gui;
     private User currentUser;
 
-    public EcommApp(UserService userService) throws IOException {
-        this.userService = userService;
+    public EcommApp() {
+        this.scanner = new Scanner(System.in);
+        this.userService = new UserService(new UserDAO());
         this.productService = new ProductService();
-
-        Screen screen = new DefaultTerminalFactory().createScreen();
-        screen.startScreen();
-        gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLACK));
     }
 
     public static void main(String[] args) {
-        try {
-            // Create required services
-            UserDAO userDAO = new UserDAO();
-            UserService userService = new UserService(userDAO);
-
-            // Create and start application
-            EcommApp app = new EcommApp(userService);
-            app.start();
-        } catch (IOException e) {
-            System.err.println("Error initializing the application: " + e.getMessage());
-        }
+        int exitCode = new CommandLine(new EcommApp()).execute(args);
+        System.exit(exitCode);
     }
 
-    public void start() {
+    @Override
+    public Integer call() throws Exception {
         while (true) {
             displayMainMenu();
+            int choice = getInput();
+
+            switch (choice) {
+                case 1 -> {
+                    if (handleLogin()) {
+                        showRoleSpecificMenu();
+                    }
+                }
+                case 2 -> {
+                    if (handleSignUp()) {
+                        showRoleSpecificMenu();
+                    }
+                }
+                case 3 -> {
+                    System.out.println("Thank you for using our E-Commerce platform!");
+                    return 0;
+                }
+                default -> System.out.println("Invalid option! Please try again.");
+            }
         }
     }
 
     private void displayMainMenu() {
-        Window window = new BasicWindow("E-Commerce Platform");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-
-        panel.addComponent(new Label("=== Main Menu ==="));
-        panel.addComponent(new Button("1. Login", this::handleLogin));
-        panel.addComponent(new Button("2. Sign Up", this::handleSignUp));
-        panel.addComponent(new Button("3. Exit", () -> System.exit(0)));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+        System.out.println("\n=== E-Commerce Platform ===");
+        System.out.println("1. Login");
+        System.out.println("2. Sign Up");
+        System.out.println("3. Exit");
+        System.out.print("Choose an option: ");
     }
 
-    private void handleLogin() {
-        Window window = new BasicWindow("Login");
-        Panel panel = new Panel(new GridLayout(2));
+    private boolean handleLogin() {
+        try {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
 
-        Label usernameLabel = new Label("Username:");
-        TextBox usernameBox = new TextBox();
-        panel.addComponent(usernameLabel);
-        panel.addComponent(usernameBox);
+            currentUser = userService.login(username, password);
+            System.out.println("Login successful!");
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Login failed: " + e.getMessage());
+            return false;
+        } catch (RuntimeException e) {
+            System.out.println("System error: " + e.getMessage());
+            return false;
+        }
+    }
 
-        Label passwordLabel = new Label("Password:");
-        TextBox passwordBox = new TextBox().setMask('*');
-        panel.addComponent(passwordLabel);
-        panel.addComponent(passwordBox);
+    private boolean handleSignUp() {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+        System.out.print("Enter email: ");
+        String email = scanner.nextLine();
 
-        panel.addComponent(new EmptySpace()); // Empty space for alignment
-        panel.addComponent(new Button("Submit", () -> {
-            try {
-                String username = usernameBox.getText();
-                String password = passwordBox.getText();
-                currentUser = userService.login(username, password);
-                showRoleSpecificMenu();
-            } catch (Exception e) {
-                showErrorMessage("Login failed: " + e.getMessage());
+        System.out.println("\nSelect your role:");
+        System.out.println("1. Buyer");
+        System.out.println("2. Seller");
+        System.out.println("3. Admin");
+        System.out.print("Choose role: ");
+
+        int roleChoice = getInput();
+        String role = switch (roleChoice) {
+            case 1 -> "buyer";
+            case 2 -> "seller";
+            case 3 -> "admin";
+            default -> {
+                System.out.println("Invalid role selection!");
+                yield null;
             }
-        }));
+        };
 
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
-    }
-
-    private void handleSignUp() {
-        Window window = new BasicWindow("Sign Up");
-        Panel panel = new Panel(new GridLayout(2));
-
-        Label usernameLabel = new Label("Username:");
-        TextBox usernameBox = new TextBox();
-        panel.addComponent(usernameLabel);
-        panel.addComponent(usernameBox);
-
-        Label passwordLabel = new Label("Password:");
-        TextBox passwordBox = new TextBox().setMask('*');
-        panel.addComponent(passwordLabel);
-        panel.addComponent(passwordBox);
-
-        Label emailLabel = new Label("Email:");
-        TextBox emailBox = new TextBox();
-        panel.addComponent(emailLabel);
-        panel.addComponent(emailBox);
-
-        Label roleLabel = new Label("Role (buyer/seller/admin):");
-        TextBox roleBox = new TextBox();
-        panel.addComponent(roleLabel);
-        panel.addComponent(roleBox);
-
-        panel.addComponent(new EmptySpace());
-        panel.addComponent(new Button("Submit", () -> {
+        if (role != null) {
             try {
-                String username = usernameBox.getText();
-                String password = passwordBox.getText();
-                String email = emailBox.getText();
-                String role = roleBox.getText();
                 currentUser = userService.registerUser(username, password, email, role);
-                showSuccessMessage("Sign Up successful.");
-                showRoleSpecificMenu();
-            } catch (Exception e) {
-                showErrorMessage("Sign Up failed: " + e.getMessage());
+                System.out.println("Registration successful!");
+                return true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Registration failed: " + e.getMessage());
             }
-        }));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+        }
+        return false;
     }
 
     private void showRoleSpecificMenu() {
@@ -149,213 +139,245 @@ public class EcommApp {
             case "buyer" -> showBuyerMenu();
             case "seller" -> showSellerMenu();
             case "admin" -> showAdminMenu();
-            default -> showErrorMessage("Invalid role: " + currentUser.getRole());
+            default -> System.out.println("Invalid role: " + currentUser.getRole());
         }
     }
 
     private void showBuyerMenu() {
-        Window window = new BasicWindow("Buyer Menu");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        while (true) {
+            System.out.println("\n=== Buyer Menu ===");
+            System.out.println("1. Browse Products");
+            System.out.println("2. Search Products");
+            System.out.println("3. View Product Details");
+            System.out.println("4. Logout");
 
-        panel.addComponent(new Label("=== Buyer Menu ==="));
-        panel.addComponent(new Button("Browse Products", this::displayAllProducts));
-        panel.addComponent(new Button("Search Products", this::searchProducts));
-        panel.addComponent(new Button("Logout", () -> currentUser = null));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+            int choice = getInput();
+            switch (choice) {
+                case 1 -> displayAllProducts();
+                case 2 -> searchProducts();
+                case 3 -> viewProductDetails();
+                case 4 -> {
+                    currentUser = null;
+                    return;
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
     }
 
     private void showSellerMenu() {
-        Window window = new BasicWindow("Seller Menu");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        while (true) {
+            System.out.println("\n=== Seller Menu ===");
+            System.out.println("1. Add Product");
+            System.out.println("2. View My Products");
+            System.out.println("3. Update Product");
+            System.out.println("4. Delete Product");
+            System.out.println("5. Logout");
 
-        panel.addComponent(new Label("=== Seller Menu ==="));
-        panel.addComponent(new Button("Add Product", this::addProduct));
-        panel.addComponent(new Button("Logout", () -> currentUser = null));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+            int choice = getInput();
+            switch (choice) {
+                case 1 -> addProduct();
+                case 2 -> viewMyProducts();
+                case 3 -> updateProduct();
+                case 4 -> deleteProduct();
+                case 5 -> {
+                    currentUser = null;
+                    return;
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
     }
 
     private void showAdminMenu() {
-        Window window = new BasicWindow("Admin Menu");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        while (true) {
+            System.out.println("\n=== Admin Menu ===");
+            System.out.println("1. View All Users");
+            System.out.println("2. Delete User");
+            System.out.println("3. View All Products");
+            System.out.println("4. Logout");
 
-        panel.addComponent(new Label("=== Admin Menu ==="));
-        panel.addComponent(new Button("View All Users", this::viewAllUsers));
-        panel.addComponent(new Button("Logout", () -> currentUser = null));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
-    }
-
-    private void displayAllProducts() {
-        Window window = new BasicWindow("All Products");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-
-        try {
-            List<Product> products = productService.getAllProducts();
-            if (products.isEmpty()) {
-                panel.addComponent(new Label("No products available."));
-            } else {
-                for (Product product : products) {
-                    panel.addComponent(new Label("Name: " + product.getName()));
-                    panel.addComponent(new Label("Description: " + product.getDescription()));
-                    panel.addComponent(new Label("Price: $" + product.getPrice()));
-                    panel.addComponent(new Label("Quantity: " + product.getQuantity()));
-                    panel.addComponent(new EmptySpace());
+            int choice = getInput();
+            switch (choice) {
+                case 1 -> viewAllUsers();
+                case 2 -> deleteUser();
+                case 3 -> viewAllProductsWithSellers();
+                case 4 -> {
+                    currentUser = null;
+                    return;
                 }
+                default -> System.out.println("Invalid option!");
             }
-        } catch (Exception e) {
-            showErrorMessage("Failed to load products: " + e.getMessage());
-            return;
         }
-
-        panel.addComponent(new Button("Back", window::close));
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
-    }
-
-    private void searchProducts() {
-        Window window = new BasicWindow("Search Products");
-        Panel panel = new Panel(new GridLayout(2));
-
-        Label searchLabel = new Label("Search:");
-        TextBox searchBox = new TextBox();
-        panel.addComponent(searchLabel);
-        panel.addComponent(searchBox);
-
-        panel.addComponent(new EmptySpace()); // Empty space for alignment
-        panel.addComponent(new Button("Search", () -> {
-            String searchTerm = searchBox.getText();
-            displaySearchResults(searchTerm);
-            window.close();
-        }));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
-    }
-
-    private void displaySearchResults(String searchTerm) {
-        Window window = new BasicWindow("Search Results");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-
-        try {
-            List<Product> products = productService.searchProducts(searchTerm);
-            if (products.isEmpty()) {
-                panel.addComponent(new Label("No products found for: " + searchTerm));
-            } else {
-                for (Product product : products) {
-                    panel.addComponent(new Label("Name: " + product.getName()));
-                    panel.addComponent(new Label("Description: " + product.getDescription()));
-                    panel.addComponent(new Label("Price: $" + product.getPrice()));
-                    panel.addComponent(new Label("Quantity: " + product.getQuantity()));
-                    panel.addComponent(new EmptySpace());
-                }
-            }
-        } catch (Exception e) {
-            showErrorMessage("Failed to search products: " + e.getMessage());
-            return;
-        }
-
-        panel.addComponent(new Button("Back", window::close));
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
     }
 
     private void addProduct() {
-        Window window = new BasicWindow("Add Product");
-        Panel panel = new Panel(new GridLayout(2));
+        try {
+            System.out.print("Enter product name: ");
+            String name = scanner.nextLine();
 
-        Label nameLabel = new Label("Product Name:");
-        TextBox nameBox = new TextBox();
-        panel.addComponent(nameLabel);
-        panel.addComponent(nameBox);
+            System.out.print("Enter product description: ");
+            String description = scanner.nextLine();
 
-        Label descLabel = new Label("Product Description:");
-        TextBox descBox = new TextBox();
-        panel.addComponent(descLabel);
-        panel.addComponent(descBox);
+            System.out.print("Enter price: ");
+            double price = Double.parseDouble(scanner.nextLine());
 
-        Label priceLabel = new Label("Product Price:");
-        TextBox priceBox = new TextBox();
-        panel.addComponent(priceLabel);
-        panel.addComponent(priceBox);
+            System.out.print("Enter quantity: ");
+            int quantity = Integer.parseInt(scanner.nextLine());
 
-        Label quantityLabel = new Label("Product Quantity:");
-        TextBox quantityBox = new TextBox();
-        panel.addComponent(quantityLabel);
-        panel.addComponent(quantityBox);
+            Product product = productService.createProduct(name, description, price, quantity, currentUser);
+            System.out.println("Product added successfully!");
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-        panel.addComponent(new EmptySpace());
-        panel.addComponent(new Button("Submit", () -> {
-            try {
-                String name = nameBox.getText();
-                String description = descBox.getText();
-                double price = Double.parseDouble(priceBox.getText());
-                int quantity = Integer.parseInt(quantityBox.getText());
+    private void viewMyProducts() {
+        try {
+            List<Product> products = productService.getSellerProducts(currentUser);
+            displayProducts(products);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-                productService.createProduct(name, description, price, quantity, currentUser);
-                showSuccessMessage("Product added successfully.");
-            } catch (Exception e) {
-                showErrorMessage("Failed to add product: " + e.getMessage());
+    private void updateProduct() {
+        try {
+            System.out.print("Enter product ID to update: ");
+            int productId = Integer.parseInt(scanner.nextLine());
+
+            Product product = productService.getProduct(productId);
+            if (product != null && product.getSeller_id() == currentUser.getUser_id()) {
+                System.out.print("Enter new name (or press enter to skip): ");
+                String name = scanner.nextLine();
+                if (!name.isEmpty()) product.setName(name);
+
+                System.out.print("Enter new description (or press enter to skip): ");
+                String description = scanner.nextLine();
+                if (!description.isEmpty()) product.setDescription(description);
+
+                System.out.print("Enter new price (or press enter to skip): ");
+                String priceStr = scanner.nextLine();
+                if (!priceStr.isEmpty()) product.setPrice(Double.parseDouble(priceStr));
+
+                System.out.print("Enter new quantity (or press enter to skip): ");
+                String quantityStr = scanner.nextLine();
+                if (!quantityStr.isEmpty()) product.setQuantity(Integer.parseInt(quantityStr));
+
+                if (productService.updateProduct(product, currentUser)) {
+                    System.out.println("Product updated successfully!");
+                }
+            } else {
+                System.out.println("Product not found or you don't have permission to update it.");
             }
-        }));
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+    private void deleteProduct() {
+        try {
+            System.out.print("Enter product ID to delete: ");
+            int productId = Integer.parseInt(scanner.nextLine());
+
+            if (productService.deleteProduct(productId, currentUser)) {
+                System.out.println("Product deleted successfully!");
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void displayAllProducts() {
+        try {
+            List<Product> products = productService.getAllProducts();
+            displayProducts(products);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void searchProducts() {
+        try {
+            System.out.print("Enter search keyword: ");
+            String keyword = scanner.nextLine();
+            List<Product> products = productService.searchProducts(keyword);
+            displayProducts(products);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void viewProductDetails() {
+        try {
+            System.out.print("Enter product ID: ");
+            int productId = Integer.parseInt(scanner.nextLine());
+            Product product = productService.getProduct(productId);
+            if (product != null) {
+                System.out.println("\n=== Product Details ===");
+                System.out.println("Name: " + product.getName());
+                System.out.println("Description: " + product.getDescription());
+                System.out.println("Price: $" + product.getPrice());
+                System.out.println("Quantity: " + product.getQuantity());
+            } else {
+                System.out.println("Product not found!");
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     private void viewAllUsers() {
-        Window window = new BasicWindow("All Users");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-
         try {
             List<User> users = userService.getAllUsers();
-            if (users.isEmpty()) {
-                panel.addComponent(new Label("No users found."));
-            } else {
-                for (User user : users) {
-                    panel.addComponent(new Label("Username: " + user.getUsername()));
-                    panel.addComponent(new Label("Role: " + user.getRole()));
-                    panel.addComponent(new EmptySpace());
-                }
+            for (User user : users) {
+                System.out.println(user.getUsername() + " (" + user.getRole() + ")");
             }
         } catch (Exception e) {
-            showErrorMessage("Failed to load users: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
-
-        panel.addComponent(new Button("Back", window::close));
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
     }
 
-    private void showErrorMessage(String message) {
-        Window window = new BasicWindow("Error");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-        panel.addComponent(new Label(message));
-        panel.addComponent(new Button("Back", window::close));
-
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+    private void deleteUser() {
+        try {
+            System.out.print("Enter user_id to delete: ");
+            int userid = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline
+            if (userService.deleteUser(userid)){
+                System.out.println("User deleted successfully!");
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
-    private void showSuccessMessage(String message) {
-        Window window = new BasicWindow("Success");
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
-        panel.addComponent(new Label(message));
-        panel.addComponent(new Button("Back", window::close));
+    private void viewAllProductsWithSellers() {
+        try {
+            List<Product> products = productService.getAllProducts();
+            for (Product product : products) {
+                User seller = userService.getUserById(product.getSeller_id());
+                System.out.println(product.getName() + " by " + seller.getUsername());
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-        window.setComponent(panel);
-        gui.addWindowAndWait(window);
+    private void displayProducts(List<Product> products) {
+        if (products.isEmpty()) {
+            System.out.println("No products found!");
+        } else {
+            for (Product product : products) {
+                System.out.println(product.getName() + " - $" + product.getPrice());
+            }
+        }
+    }
+
+    private int getInput() {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            return -1; // invalid input
+        }
     }
 }
