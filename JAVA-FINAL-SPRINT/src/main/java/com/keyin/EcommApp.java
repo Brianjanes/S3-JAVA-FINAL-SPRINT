@@ -47,7 +47,6 @@ public class EcommApp {
     }
 
     private void displayMainMenu() {
-        // Close any existing window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -67,7 +66,6 @@ public class EcommApp {
     }
 
     private void handleLogin() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -103,7 +101,6 @@ public class EcommApp {
     }
 
     private void handleSignUp() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -160,7 +157,6 @@ public class EcommApp {
     }
 
     private void showBuyerMenu() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -184,6 +180,10 @@ public class EcommApp {
     }
 
     private void showSellerMenu() {
+        if (currentWindow != null) {
+            currentWindow.close();
+        }
+
         Window window = new BasicWindow("Seller Menu");
         currentWindow = window;
         Panel panel = new Panel();
@@ -238,7 +238,6 @@ public class EcommApp {
     }
 
     private void showAdminMenu() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -261,7 +260,6 @@ public class EcommApp {
     }
 
     private void displayAllProducts() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -293,7 +291,6 @@ public class EcommApp {
     }
 
     private void searchProducts() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -340,7 +337,6 @@ public class EcommApp {
     }
 
     private void addProduct() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -395,7 +391,6 @@ public class EcommApp {
     }
 
     private void viewAllUsers() {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
@@ -427,7 +422,6 @@ public class EcommApp {
     }
 
     private void showErrorMessage(String message) {
-        // Close previous window
         if (currentWindow != null) {
             currentWindow.close();
         }
