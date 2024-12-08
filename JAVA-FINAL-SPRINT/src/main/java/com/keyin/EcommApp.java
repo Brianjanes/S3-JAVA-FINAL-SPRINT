@@ -184,11 +184,6 @@ public class EcommApp {
     }
 
     private void showSellerMenu() {
-        // Close previous window
-        if (currentWindow != null) {
-            currentWindow.close();
-        }
-
         Window window = new BasicWindow("Seller Menu");
         currentWindow = window;
         Panel panel = new Panel();
@@ -196,11 +191,47 @@ public class EcommApp {
 
         panel.addComponent(new Label("=== Seller Menu ==="));
         panel.addComponent(new Button("Add Product", this::addProduct));
+        panel.addComponent(new Button("My Products", this::listSellerProducts));
         panel.addComponent(new Button("Logout", () -> {
             currentUser = null;
             displayMainMenu();
         }));
         panel.addComponent(new Button("Back", this::displayMainMenu));
+
+        window.setComponent(panel);
+        gui.addWindowAndWait(window);
+    }
+
+    private void listSellerProducts() {
+        if (currentWindow != null) {
+            currentWindow.close();
+        }
+
+        Window window = new BasicWindow("My Products");
+        currentWindow = window;
+        Panel panel = new Panel();
+        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+
+        panel.addComponent(new Label("=== My Products ==="));
+        panel.addComponent(new Button("Back", this::showSellerMenu));
+
+        try {
+            List<Product> sellerProducts = productService.getSellerProducts(currentUser);
+            if (sellerProducts.isEmpty()) {
+                panel.addComponent(new Label("You have no products listed."));
+            } else {
+                for (Product product : sellerProducts) {
+                    Panel productPanel = new Panel(new GridLayout(2));
+                    productPanel.addComponent(new Label(String.format("Name: %s | Price: $%.2f | Quantity: %d",
+                            product.getName(), product.getPrice(), product.getQuantity())));
+                    productPanel.addComponent(new Button("Edit", () -> this.productService.updateProduct(product, currentUser)));
+                    productPanel.addComponent(new Button("Delete", () -> this.productService.deleteProduct(product.getProduct_id(), currentUser)));
+                    panel.addComponent(productPanel);
+                }
+            }
+        } catch (Exception e) {
+            panel.addComponent(new Label("Error retrieving products: " + e.getMessage()));
+        }
 
         window.setComponent(panel);
         gui.addWindowAndWait(window);
