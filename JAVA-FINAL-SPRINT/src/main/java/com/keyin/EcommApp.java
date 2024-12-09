@@ -249,6 +249,7 @@ public class EcommApp {
 
         panel.addComponent(new Label("=== Admin Menu ==="));
         panel.addComponent(new Button("View All Users", this::viewAllUsers));
+        panel.addComponent(new Button("Update User", this::updateUserMenu));
         panel.addComponent(new Button("Logout", () -> {
             currentUser = null;
             displayMainMenu();
@@ -258,6 +259,57 @@ public class EcommApp {
         window.setComponent(panel);
         gui.addWindowAndWait(window);
     }
+
+    private void updateUserMenu() {
+        if (currentWindow != null) {
+            currentWindow.close();
+        }
+
+        Window window = new BasicWindow("Update User");
+        currentWindow = window;
+        Panel panel = new Panel(new GridLayout(2));
+
+        // Input fields
+        panel.addComponent(new Label("User ID:"));
+        TextBox userIdBox = new TextBox();
+        panel.addComponent(userIdBox);
+
+        panel.addComponent(new Label("Field to Update (username/password/email/role):"));
+        TextBox fieldBox = new TextBox();
+        panel.addComponent(fieldBox);
+
+        panel.addComponent(new Label("New Value:"));
+        TextBox valueBox = new TextBox();
+        panel.addComponent(valueBox);
+
+        Label statusLabel = new Label("");
+        panel.addComponent(statusLabel);
+
+        // Submit button
+        panel.addComponent(new Button("Submit", () -> {
+            try {
+                int userId = Integer.parseInt(userIdBox.getText());
+                String field = fieldBox.getText();
+                String newValue = valueBox.getText();
+
+                boolean success = userService.updateUserField(userId, field, newValue);
+                if (success) {
+                    statusLabel.setText("User updated successfully!");
+                } else {
+                    statusLabel.setText("Failed to update user. Check inputs.");
+                }
+            } catch (NumberFormatException e) {
+                statusLabel.setText("Invalid User ID!");
+            } catch (Exception e) {
+                statusLabel.setText("Error: " + e.getMessage());
+            }
+        }));
+
+        panel.addComponent(new Button("Back", this::showAdminMenu));
+        window.setComponent(panel);
+        gui.addWindowAndWait(window);
+    }
+
 
     private void displayAllProducts() {
         if (currentWindow != null) {
