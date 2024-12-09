@@ -202,4 +202,30 @@ public class UserService {
             default -> user;
         };
     }
+    public boolean updateUserField(int userId, String fieldName, String newValue) throws Exception {
+        User user = userDAO.getUserById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found: " + userId);
+        }
+
+        switch (fieldName.toLowerCase()) {
+            case "username" -> user.setUsername(newValue);
+            case "password" -> user.setPassword(hashPassword(newValue)); // Hash the password
+            case "email" -> {
+                if (!newValue.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                    throw new IllegalArgumentException("Invalid email format");
+                }
+                user.setEmail(newValue);
+            }
+            case "role" -> {
+                if (!newValue.matches("^(buyer|seller|admin)$")) {
+                    throw new IllegalArgumentException("Invalid role");
+                }
+                user.setRole(newValue);
+            }
+            default -> throw new IllegalArgumentException("Invalid field name: " + fieldName);
+        }
+
+        return userDAO.updateUser(user);
+    }
 }
