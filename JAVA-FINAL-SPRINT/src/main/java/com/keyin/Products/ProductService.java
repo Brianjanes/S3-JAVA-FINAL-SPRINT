@@ -3,7 +3,9 @@ package com.keyin.Products;
 import com.keyin.User.User;
 import java.sql.SQLException;
 import java.util.List;
-/**test
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
 /**
  * Service class that handles all business logic for product operations.
  * This class acts as an intermediary between the API layer and data access layer,
@@ -116,12 +118,14 @@ public class ProductService {
     /**
      * Retrieves all products in the system.
      *
-     * @return List of all products
+     * @return List of all products sorted by ID in ascending order
      * @throws RuntimeException If database operation fails
      */
     public List<Product> getAllProducts() {
         try {
-            return productDAO.getAllProducts();
+            return productDAO.getAllProducts().stream()
+                    .sorted(Comparator.comparingInt(Product::getProduct_id))
+                    .collect(Collectors.toList());
         } catch (SQLException e) {
             throw new RuntimeException("Database error while fetching all products: " + e.getMessage());
         }
@@ -131,14 +135,16 @@ public class ProductService {
      * Retrieves all products for a specific seller.
      *
      * @param seller The seller whose products to retrieve
-     * @return List of products belonging to the seller
+     * @return List of products belonging to the seller, sorted by ID in ascending order
      * @throws RuntimeException If database operation fails
      * @throws IllegalArgumentException If user is not a seller
      */
     public List<Product> getSellerProducts(User seller) {
         try {
             validateSellerRole(seller);
-            return productDAO.getProductsBySeller(seller.getUser_id());
+            return productDAO.getProductsBySeller(seller.getUser_id()).stream()
+                    .sorted(Comparator.comparingInt(Product::getProduct_id))
+                    .collect(Collectors.toList());
         } catch (SQLException e) {
             throw new RuntimeException("Database error while fetching seller products: " + e.getMessage());
         }
@@ -148,7 +154,7 @@ public class ProductService {
      * Searches for products by keyword in name or description.
      *
      * @param keyword The search term to look for
-     * @return List of products matching the search term
+     * @return List of products matching the search term, sorted by ID in ascending order
      * @throws RuntimeException If database operation fails
      * @throws IllegalArgumentException If search keyword is empty
      */
@@ -157,7 +163,9 @@ public class ProductService {
             if (keyword == null || keyword.trim().isEmpty()) {
                 throw new IllegalArgumentException("Search keyword cannot be empty");
             }
-            return productDAO.searchProducts(keyword.trim());
+            return productDAO.searchProducts(keyword.trim()).stream()
+                    .sorted(Comparator.comparingInt(Product::getProduct_id))
+                    .collect(Collectors.toList());
         } catch (SQLException e) {
             throw new RuntimeException("Database error while searching products: " + e.getMessage());
         }
