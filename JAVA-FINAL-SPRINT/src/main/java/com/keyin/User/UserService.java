@@ -4,12 +4,14 @@ import com.keyin.Roles.*;
 import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * Service class for user-related business logic and authentication.
  *
  * @author Kyle Hollett, Brad Ayers, Brian Janes
- * @version 1.0
+ * @version 1.1
  * @since 2024-11-27
  */
 public class UserService {
@@ -85,15 +87,19 @@ public class UserService {
             throw new RuntimeException("Database error during login: " + e.getMessage());
         }
     }
+
     /**
-     * Retrieves all users from database.
+     * Retrieves all users from database, sorted by ID in ascending order.
      *
-     * @return List of all users
+     * @return List of all users sorted by ID
      * @throws RuntimeException if database error occurs
      */
     public List<User> getAllUsers() {
         try {
-            return userDAO.getAllUsers();
+            // Sort users by ID in ascending order
+            return userDAO.getAllUsers().stream()
+                    .sorted(Comparator.comparingInt(User::getUser_id))
+                    .collect(Collectors.toList());
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching users: " + e.getMessage());
         }
@@ -202,6 +208,16 @@ public class UserService {
             default -> user;
         };
     }
+
+    /**
+     * Updates a specific field of a user.
+     *
+     * @param userId ID of the user to update
+     * @param fieldName Name of the field to update
+     * @param newValue New value for the field
+     * @return true if update was successful
+     * @throws Exception if an error occurs during update
+     */
     public boolean updateUserField(int userId, String fieldName, String newValue) throws Exception {
         User user = userDAO.getUserById(userId);
         if (user == null) {
