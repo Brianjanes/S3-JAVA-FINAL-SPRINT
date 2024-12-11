@@ -65,41 +65,7 @@ ProductService <>---- ProductDAO
 
 ### Directory Structure
 
-JAVA-FINAL-SPRINT [ecommerce-platform]
-├── .idea
-├── src
-│   ├── main
-│   │   ├── java
-│   │   │   └── com.keyin
-│   │   │       ├── Database
-│   │   │       │   ├── DatabaseConfig
-│   │   │       │   └── DatabaseConnectionTest
-│   │   │       ├── Products
-│   │   │       │   ├── Product
-│   │   │       │   ├── ProductDAO
-│   │   │       │   └── ProductService
-│   │   │       ├── Roles
-│   │   │       │   ├── Admin
-│   │   │       │   ├── Buyer
-│   │   │       │   └── Seller
-│   │   │       ├── User
-│   │   │       │   ├── User
-│   │   │       │   ├── UserDAO
-│   │   │       │   ├── UserService
-│   │   │       │   └── UserSystemTest
-│   │   │       └── EcommApp
-│   │   └── resources
-│   │       └── SQL
-│   │           ├── create.sql
-│   │           └── modifiedCreate.sql
-├── test
-│   ├── java
-│   │   └── com.keyin.Products
-│   │       └── ProductSystemTest
-├── target
-├── .gitignore
-├── pom.xml
-└── External Libraries
+<img width="300" alt="Screenshot 2024-12-11 at 12 23 35 PM" src="https://github.com/user-attachments/assets/7d848073-94a9-4d6f-b49d-8f078d62ae64">
 
 ### Dependencies
 The project uses the following dependencies:
