@@ -14,6 +14,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main application class for the E-Commerce platform with JLine integration.
+ *
+ * @author Kyle Hollett, Brad Ayers, Brian Janes
+ * @version 1.1
+ * @since 2024-11-27
+ */
+
 public class EcommApp {
     private final UserService userService;
     private final ProductService productService;
@@ -21,12 +29,21 @@ public class EcommApp {
     private User currentUser;
     private Window currentWindow;
 
+    // Increased terminal size for better visibility
+    private static final TerminalSize LARGE_WINDOW_SIZE = new TerminalSize(120, 40);
+    private static final TerminalSize MEDIUM_WINDOW_SIZE = new TerminalSize(100, 30);
+
     public EcommApp(UserService userService) throws IOException {
         this.userService = userService;
         this.productService = new ProductService();
 
-        Screen screen = new DefaultTerminalFactory().createScreen();
+        // Create screen with larger size
+        DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+        terminalFactory.setInitialTerminalSize(LARGE_WINDOW_SIZE);
+        Screen screen = terminalFactory.createScreen();
         screen.startScreen();
+
+        // Initialize GUI with more spacing
         gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLACK));
     }
 
@@ -52,16 +69,69 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("E-Commerce Platform");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
+        // Create panel with vertical layout and padding
         Panel panel = new Panel();
         panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
 
-        panel.addComponent(new Label("=== Main Menu ==="));
-        panel.addComponent(new Button("1. Login", this::handleLogin));
-        panel.addComponent(new Button("2. Sign Up", this::handleSignUp));
-        panel.addComponent(new Button("3. Exit", () -> System.exit(0)));
+        // Add padded components
+        panel.addComponent(new Label("=== Main Menu ===")
+                .setLayoutData(GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER
+                )));
+
+
+        Button loginButton = new Button("1. Login", this::handleLogin);
+        loginButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(loginButton);
+
+        Button signupButton = new Button("2. Sign Up", this::handleSignUp);
+        signupButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(signupButton);
+
+        Button exitButton = new Button("3. Exit", () -> System.exit(0));
+        exitButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(exitButton);
 
         window.setComponent(panel);
+
+        // Set window size
+        window.setSize(MEDIUM_WINDOW_SIZE);
+
         gui.addWindowAndWait(window);
     }
 
@@ -71,21 +141,80 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Login");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel(new GridLayout(2));
 
+        // Create grid layout with increased padding
+        Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
+
+        // Username input with padding
         Label usernameLabel = new Label("Username:");
-        TextBox usernameBox = new TextBox();
+        usernameLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox usernameBox = new TextBox(new TerminalSize(30, 1));
+        usernameBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(usernameLabel);
         panel.addComponent(usernameBox);
 
+        // Password input with padding
         Label passwordLabel = new Label("Password:");
-        TextBox passwordBox = new TextBox().setMask('*');
+        passwordLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox passwordBox = new TextBox(new TerminalSize(30, 1)).setMask('*');
+        passwordBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(passwordLabel);
         panel.addComponent(passwordBox);
 
-        panel.addComponent(new Button("Back", this::displayMainMenu));
-        panel.addComponent(new Button("Submit", () -> {
+        // Back button with padding
+        Button backButton = new Button("Back", this::displayMainMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
+
+        // Submit button with padding
+        Button submitButton = new Button("Submit", () -> {
             try {
                 String username = usernameBox.getText();
                 String password = passwordBox.getText();
@@ -94,9 +223,22 @@ public class EcommApp {
             } catch (Exception e) {
                 showErrorMessage("Login failed: " + e.getMessage());
             }
-        }));
+        });
+        submitButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(submitButton);
 
         window.setComponent(panel);
+
+        // Set window size
+        window.setSize(MEDIUM_WINDOW_SIZE);
+
         gui.addWindowAndWait(window);
     }
 
@@ -106,31 +248,124 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Sign Up");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel(new GridLayout(2));
 
+        // Create grid layout with increased padding
+        Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
+
+        // Username input with padding
         Label usernameLabel = new Label("Username:");
-        TextBox usernameBox = new TextBox();
+        usernameLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox usernameBox = new TextBox(new TerminalSize(30, 1));
+        usernameBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(usernameLabel);
         panel.addComponent(usernameBox);
 
+        // Password input with padding
         Label passwordLabel = new Label("Password:");
-        TextBox passwordBox = new TextBox().setMask('*');
+        passwordLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox passwordBox = new TextBox(new TerminalSize(30, 1)).setMask('*');
+        passwordBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(passwordLabel);
         panel.addComponent(passwordBox);
 
+        // Email input with padding
         Label emailLabel = new Label("Email:");
-        TextBox emailBox = new TextBox();
+        emailLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox emailBox = new TextBox(new TerminalSize(30, 1));
+        emailBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(emailLabel);
         panel.addComponent(emailBox);
 
+        // Role input with padding
         Label roleLabel = new Label("Role (buyer/seller/admin):");
-        TextBox roleBox = new TextBox();
+        roleLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox roleBox = new TextBox(new TerminalSize(30, 1));
+        roleBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
         panel.addComponent(roleLabel);
         panel.addComponent(roleBox);
 
-        panel.addComponent(new Button("Back", this::displayMainMenu));
-        panel.addComponent(new Button("Submit", () -> {
+        // Back button with padding
+        Button backButton = new Button("Back", this::displayMainMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
+
+        // Submit button with padding
+        Button submitButton = new Button("Submit", () -> {
             try {
                 String username = usernameBox.getText();
                 String password = passwordBox.getText();
@@ -141,9 +376,22 @@ public class EcommApp {
             } catch (Exception e) {
                 showErrorMessage("Sign Up failed: " + e.getMessage());
             }
-        }));
+        });
+        submitButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(submitButton);
 
         window.setComponent(panel);
+
+        // Set window size
+        window.setSize(LARGE_WINDOW_SIZE);
+
         gui.addWindowAndWait(window);
     }
 
@@ -162,20 +410,74 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Buyer Menu");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
         Panel panel = new Panel();
         panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
 
-        panel.addComponent(new Label("=== Buyer Menu ==="));
-        panel.addComponent(new Button("Browse Products", this::displayAllProducts));
-        panel.addComponent(new Button("Search Products", this::searchProducts));
-        panel.addComponent(new Button("Logout", () -> {
+        panel.addComponent(new Label("=== Buyer Menu ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
+
+        Button browseButton = new Button("Browse Products", this::displayAllProducts);
+        browseButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(browseButton);
+
+        Button searchButton = new Button("Search Products", this::searchProducts);
+        searchButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(searchButton);
+
+        Button logoutButton = new Button("Logout", () -> {
             currentUser = null;
             displayMainMenu();
-        }));
-        panel.addComponent(new Button("Back", this::displayMainMenu));
+        });
+        logoutButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(logoutButton);
+
+        Button backButton = new Button("Back", this::displayMainMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
+        window.setSize(MEDIUM_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
 
@@ -185,20 +487,74 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Seller Menu");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
         Panel panel = new Panel();
         panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
 
-        panel.addComponent(new Label("=== Seller Menu ==="));
-        panel.addComponent(new Button("Add Product", this::addProduct));
-        panel.addComponent(new Button("My Products", this::listSellerProducts));
-        panel.addComponent(new Button("Logout", () -> {
+        panel.addComponent(new Label("=== Seller Menu ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
+
+        Button addProductButton = new Button("Add Product", this::addProduct);
+        addProductButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(addProductButton);
+
+        Button myProductsButton = new Button("My Products", this::listSellerProducts);
+        myProductsButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(myProductsButton);
+
+        Button logoutButton = new Button("Logout", () -> {
             currentUser = null;
             displayMainMenu();
-        }));
-        panel.addComponent(new Button("Back", this::displayMainMenu));
+        });
+        logoutButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(logoutButton);
+
+        Button backButton = new Button("Back", this::displayMainMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
+        window.setSize(MEDIUM_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
 
@@ -208,32 +564,232 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("My Products");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
 
-        panel.addComponent(new Label("=== My Products ==="));
-        panel.addComponent(new Button("Back", this::showSellerMenu));
+        Panel mainPanel = new Panel();
+        mainPanel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        mainPanel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
+
+        mainPanel.addComponent(new Label("=== My Products ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
+
+        // Status label for showing success/error messages
+        Label statusLabel = new Label("");
+        statusLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        mainPanel.addComponent(statusLabel);
 
         try {
             List<Product> sellerProducts = productService.getSellerProducts(currentUser);
             if (sellerProducts.isEmpty()) {
-                panel.addComponent(new Label("You have no products listed."));
+                Label noProductsLabel = new Label("You have no products listed.");
+                noProductsLabel.setLayoutData(GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        1,
+                        1
+                ));
+                mainPanel.addComponent(noProductsLabel);
             } else {
                 for (Product product : sellerProducts) {
-                    Panel productPanel = new Panel(new GridLayout(2));
-                    productPanel.addComponent(new Label(String.format("Name: %s | Price: $%.2f | Quantity: %d",
-                            product.getName(), product.getPrice(), product.getQuantity())));
-                    productPanel.addComponent(new Button("Edit", () -> this.productService.updateProduct(product, currentUser)));
-                    productPanel.addComponent(new Button("Delete", () -> this.productService.deleteProduct(product.getProduct_id(), currentUser)));
-                    panel.addComponent(productPanel);
+                    Panel productPanel = new Panel(new GridLayout(3));
+                    productPanel.setLayoutData(
+                            GridLayout.createLayoutData(
+                                    GridLayout.Alignment.CENTER,
+                                    GridLayout.Alignment.CENTER,
+                                    true,
+                                    false,
+                                    1,
+                                    1
+                            )
+                    );
+
+                    Label productLabel = new Label(String.format("Name: %s | Price: $%.2f | Quantity: %d",
+                            product.getName(), product.getPrice(), product.getQuantity()));
+                    productLabel.setLayoutData(GridLayout.createLayoutData(
+                            GridLayout.Alignment.FILL,
+                            GridLayout.Alignment.CENTER,
+                            true,
+                            false,
+                            1,
+                            1
+                    ));
+                    productPanel.addComponent(productLabel);
+
+                    Button editButton = new Button("Edit", () -> {
+                        // Create a new window for editing the product
+                        Window editWindow = new BasicWindow("Edit Product");
+                        editWindow.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
+
+                        Panel editPanel = new Panel(new GridLayout(2));
+                        editPanel.setLayoutData(
+                                GridLayout.createLayoutData(
+                                        GridLayout.Alignment.CENTER,
+                                        GridLayout.Alignment.CENTER,
+                                        true,
+                                        false,
+                                        5,
+                                        3
+                                )
+                        );
+
+                        // Name input
+                        editPanel.addComponent(new Label("Name:"));
+                        TextBox nameInput = new TextBox(product.getName());
+                        editPanel.addComponent(nameInput);
+
+                        // Description input
+                        editPanel.addComponent(new Label("Description:"));
+                        TextBox descInput = new TextBox(product.getDescription());
+                        editPanel.addComponent(descInput);
+
+                        // Price input
+                        editPanel.addComponent(new Label("Price:"));
+                        TextBox priceInput = new TextBox(String.format("%.2f", product.getPrice()));
+                        editPanel.addComponent(priceInput);
+
+                        // Quantity input
+                        editPanel.addComponent(new Label("Quantity:"));
+                        TextBox quantityInput = new TextBox(String.valueOf(product.getQuantity()));
+                        editPanel.addComponent(quantityInput);
+
+                        // Save button
+                        Button saveButton = new Button("Save", () -> {
+                            try {
+                                // Validate and parse inputs
+                                String newName = nameInput.getText().trim();
+                                String newDescription = descInput.getText().trim();
+                                double newPrice = Double.parseDouble(priceInput.getText().trim());
+                                int newQuantity = Integer.parseInt(quantityInput.getText().trim());
+
+                                // Create updated product object
+                                Product updatedProduct = new Product(
+                                        product.getProduct_id(),
+                                        newName,
+                                        newDescription,
+                                        newPrice,
+                                        newQuantity,
+                                        product.getSeller_id()
+                                );
+
+                                // Attempt to update the product
+                                boolean updateSuccess = productService.updateProduct(updatedProduct, currentUser);
+
+                                if (updateSuccess) {
+                                    // Update successful, refresh the list and close edit window
+                                    statusLabel.setText("Product updated successfully!");
+                                    editWindow.close();
+                                    listSellerProducts(); // Refresh the products list
+                                } else {
+                                    statusLabel.setText("Failed to update product.");
+                                }
+                            } catch (NumberFormatException e) {
+                                statusLabel.setText("Invalid number format. Please check price and quantity.");
+                            } catch (IllegalArgumentException e) {
+                                statusLabel.setText(e.getMessage());
+                            }
+                        });
+                        editPanel.addComponent(saveButton);
+
+                        // Cancel button
+                        Button cancelButton = new Button("Cancel", editWindow::close);
+                        editPanel.addComponent(cancelButton);
+
+                        editWindow.setComponent(editPanel);
+                        editWindow.setSize(LARGE_WINDOW_SIZE);
+                        gui.addWindowAndWait(editWindow);
+                    });
+                    editButton.setLayoutData(GridLayout.createLayoutData(
+                            GridLayout.Alignment.CENTER,
+                            GridLayout.Alignment.CENTER,
+                            false,
+                            false,
+                            1,
+                            1
+                    ));
+                    productPanel.addComponent(editButton);
+
+                    Button deleteButton = new Button("Delete", () -> {
+                        try {
+                            boolean deleteSuccess = this.productService.deleteProduct(product.getProduct_id(), currentUser);
+                            if (deleteSuccess) {
+                                statusLabel.setText("Product deleted successfully!");
+                                listSellerProducts(); // Refresh the products list
+                            } else {
+                                statusLabel.setText("Failed to delete product.");
+                            }
+                        } catch (Exception e) {
+                            statusLabel.setText("Error deleting product: " + e.getMessage());
+                        }
+                    });
+                    deleteButton.setLayoutData(GridLayout.createLayoutData(
+                            GridLayout.Alignment.CENTER,
+                            GridLayout.Alignment.CENTER,
+                            false,
+                            false,
+                            1,
+                            1
+                    ));
+                    productPanel.addComponent(deleteButton);
+
+                    mainPanel.addComponent(productPanel);
                 }
             }
+
+            Button backButton = new Button("Back", this::showSellerMenu);
+            backButton.setLayoutData(GridLayout.createLayoutData(
+                    GridLayout.Alignment.CENTER,
+                    GridLayout.Alignment.CENTER,
+                    true,
+                    false,
+                    1,
+                    1
+            ));
+            mainPanel.addComponent(backButton);
         } catch (Exception e) {
-            panel.addComponent(new Label("Error retrieving products: " + e.getMessage()));
+            Label errorLabel = new Label("Error retrieving products: " + e.getMessage());
+            errorLabel.setLayoutData(GridLayout.createLayoutData(
+                    GridLayout.Alignment.CENTER,
+                    GridLayout.Alignment.CENTER,
+                    true,
+                    false,
+                    1,
+                    1
+            ));
+            mainPanel.addComponent(errorLabel);
+
+            Button backButton = new Button("Back", this::showSellerMenu);
+            backButton.setLayoutData(GridLayout.createLayoutData(
+                    GridLayout.Alignment.CENTER,
+                    GridLayout.Alignment.CENTER,
+                    true,
+                    false,
+                    1,
+                    1
+            ));
+            mainPanel.addComponent(backButton);
         }
 
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
+        window.setSize(LARGE_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
 
@@ -243,20 +799,74 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Admin Menu");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
         Panel panel = new Panel();
         panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
 
-        panel.addComponent(new Label("=== Admin Menu ==="));
-        panel.addComponent(new Button("View All Users", this::viewAllUsers));
-        panel.addComponent(new Button("Update User", this::updateUserMenu));
-        panel.addComponent(new Button("Logout", () -> {
+        panel.addComponent(new Label("=== Admin Menu ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
+
+        Button viewUsersButton = new Button("View All Users", this::viewAllUsers);
+        viewUsersButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(viewUsersButton);
+
+        Button updateUserButton = new Button("Update User", this::updateUserMenu);
+        updateUserButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(updateUserButton);
+
+        Button logoutButton = new Button("Logout", () -> {
             currentUser = null;
             displayMainMenu();
-        }));
-        panel.addComponent(new Button("Back", this::displayMainMenu));
+        });
+        logoutButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(logoutButton);
+
+        Button backButton = new Button("Back", this::displayMainMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
+        window.setSize(MEDIUM_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
 
@@ -266,27 +876,101 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Update User");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel(new GridLayout(2));
 
-        // Input fields
-        panel.addComponent(new Label("User ID:"));
-        TextBox userIdBox = new TextBox();
+        Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
+
+        // User ID input with padding
+        Label userIdLabel = new Label("User ID:");
+        userIdLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox userIdBox = new TextBox(new TerminalSize(30, 1));
+        userIdBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(userIdLabel);
         panel.addComponent(userIdBox);
 
-        panel.addComponent(new Label("Field to Update (username/password/email/role):"));
-        TextBox fieldBox = new TextBox();
+        // Field to Update input with padding
+        Label fieldLabel = new Label("Field to Update (username/password/email/role):");
+        fieldLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox fieldBox = new TextBox(new TerminalSize(30, 1));
+        fieldBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(fieldLabel);
         panel.addComponent(fieldBox);
 
-        panel.addComponent(new Label("New Value:"));
-        TextBox valueBox = new TextBox();
+        // New Value input with padding
+        Label valueLabel = new Label("New Value:");
+        valueLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.END,
+                GridLayout.Alignment.CENTER,
+                false,
+                false,
+                1,
+                1
+        ));
+        TextBox valueBox = new TextBox(new TerminalSize(30, 1));
+        valueBox.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(valueLabel);
         panel.addComponent(valueBox);
 
+        // Status label
         Label statusLabel = new Label("");
+        statusLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                2,
+                1
+        ));
         panel.addComponent(statusLabel);
 
-        // Submit button
-        panel.addComponent(new Button("Submit", () -> {
+        // Submit button with padding
+        Button submitButton = new Button("Submit", () -> {
             try {
                 int userId = Integer.parseInt(userIdBox.getText());
                 String field = fieldBox.getText();
@@ -303,13 +987,33 @@ public class EcommApp {
             } catch (Exception e) {
                 statusLabel.setText("Error: " + e.getMessage());
             }
-        }));
+        });
+        submitButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(submitButton);
 
-        panel.addComponent(new Button("Back", this::showAdminMenu));
+        // Back button with padding
+        Button backButton = new Button("Back", this::showAdminMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(backButton);
+
         window.setComponent(panel);
+        window.setSize(MEDIUM_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
-
 
     private void displayAllProducts() {
         if (currentWindow != null) {
@@ -317,12 +1021,18 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("All Products");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
 
-        panel.addComponent(new Label("Product Listing"));
-        panel.addComponent(new Button("Back", this::showBuyerMenu));
+        Panel panel = new Panel(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 5, 3
+        ));
+
+        panel.addComponent(new Label("Product Listing")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
 
         try {
             List<Product> products = productService.getAllProducts();
@@ -330,13 +1040,23 @@ public class EcommApp {
                 panel.addComponent(new Label("No products available."));
             } else {
                 for (Product product : products) {
-                    panel.addComponent(new Label(String.format("ID: %d | Name: %s | Price: $%.2f | Quantity: %d",
-                            product.getProduct_id(), product.getName(), product.getPrice(), product.getQuantity())));
+                    panel.addComponent(new Label(String.format(
+                            "ID: %d | Name: %s | Price: $%.2f | Quantity: %d",
+                            product.getProduct_id(), product.getName(), product.getPrice(), product.getQuantity()
+                    )));
                 }
             }
         } catch (Exception e) {
             panel.addComponent(new Label("Error retrieving products: " + e.getMessage()));
         }
+
+        Button backButton = new Button("Back", this::showBuyerMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 1, 1
+        ));
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
         gui.addWindowAndWait(window);
@@ -348,18 +1068,29 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Search Products");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
         Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 5, 3
+        ));
 
         Label searchLabel = new Label("Search Keyword:");
         TextBox searchBox = new TextBox();
         panel.addComponent(searchLabel);
         panel.addComponent(searchBox);
 
-        Panel resultsPanel = new Panel();
-        resultsPanel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        Panel resultsPanel = new Panel(new LinearLayout(Direction.VERTICAL));
+        resultsPanel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.FILL,
+                GridLayout.Alignment.CENTER,
+                true, true
+        ));
 
-        panel.addComponent(new Button("Search", () -> {
+        Button searchButton = new Button("Search", () -> {
             try {
                 String keyword = searchBox.getText();
                 List<Product> products = productService.searchProducts(keyword);
@@ -371,17 +1102,27 @@ public class EcommApp {
                     resultsPanel.addComponent(new Label("No products found."));
                 } else {
                     for (Product product : products) {
-                        resultsPanel.addComponent(new Label(String.format("ID: %d | Name: %s | Price: $%.2f | Quantity: %d",
-                                product.getProduct_id(), product.getName(), product.getPrice(), product.getQuantity())));
+                        resultsPanel.addComponent(new Label(String.format(
+                                "ID: %d | Name: %s | Price: $%.2f | Quantity: %d",
+                                product.getProduct_id(), product.getName(), product.getPrice(), product.getQuantity()
+                        )));
                     }
                 }
             } catch (Exception e) {
                 resultsPanel.removeAllComponents();
                 resultsPanel.addComponent(new Label("Error searching products: " + e.getMessage()));
             }
-        }));
+        });
 
-        panel.addComponent(new Button("Back", this::showBuyerMenu));
+        Button backButton = new Button("Back", this::showBuyerMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 1, 1
+        ));
+
+        panel.addComponent(searchButton);
+        panel.addComponent(backButton);
         panel.addComponent(resultsPanel);
 
         window.setComponent(panel);
@@ -394,49 +1135,60 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Add Product");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel(new GridLayout(2));
 
-        Label nameLabel = new Label("Product Name:");
-        TextBox nameBox = new TextBox();
-        panel.addComponent(nameLabel);
+        Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 5, 3
+        ));
+
+        panel.addComponent(new Label("Product Name:"));
+        TextBox nameBox = new TextBox(new TerminalSize(30, 1));
         panel.addComponent(nameBox);
 
-        Label descLabel = new Label("Description:");
-        TextBox descBox = new TextBox();
-        panel.addComponent(descLabel);
+        panel.addComponent(new Label("Description:"));
+        TextBox descBox = new TextBox(new TerminalSize(30, 1));
         panel.addComponent(descBox);
 
-        Label priceLabel = new Label("Price:");
-        TextBox priceBox = new TextBox();
-        panel.addComponent(priceLabel);
+        panel.addComponent(new Label("Price:"));
+        TextBox priceBox = new TextBox(new TerminalSize(30, 1));
         panel.addComponent(priceBox);
 
-        Label quantityLabel = new Label("Quantity:");
-        TextBox quantityBox = new TextBox();
-        panel.addComponent(quantityLabel);
+        panel.addComponent(new Label("Quantity:"));
+        TextBox quantityBox = new TextBox(new TerminalSize(30, 1));
         panel.addComponent(quantityBox);
 
         Label statusLabel = new Label("");
+        statusLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 2, 1
+        ));
         panel.addComponent(statusLabel);
 
-        panel.addComponent(new Button("Add Product", () -> {
+        Button addButton = new Button("Add Product", () -> {
             try {
                 String name = nameBox.getText();
                 String description = descBox.getText();
                 double price = Double.parseDouble(priceBox.getText());
                 int quantity = Integer.parseInt(quantityBox.getText());
 
-                Product product = productService.createProduct(name, description, price, quantity, currentUser);
+                productService.createProduct(name, description, price, quantity, currentUser);
                 statusLabel.setText("Product added successfully!");
             } catch (NumberFormatException e) {
                 statusLabel.setText("Invalid price or quantity!");
             } catch (Exception e) {
                 statusLabel.setText("Error adding product: " + e.getMessage());
             }
-        }));
+        });
 
-        panel.addComponent(new Button("Back", this::showSellerMenu));
+        Button backButton = new Button("Back", this::showSellerMenu);
+
+        panel.addComponent(addButton);
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
         gui.addWindowAndWait(window);
@@ -448,26 +1200,64 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("All Users");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
-        Panel panel = new Panel();
-        panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
 
-        panel.addComponent(new Label("View All Users"));
-        panel.addComponent(new Button("Back", this::showAdminMenu));
+        Panel panel = new Panel(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
+
+        panel.addComponent(new Label("=== View All Users ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
 
         try {
             List<User> users = userService.getAllUsers();
             if (users.isEmpty()) {
-                panel.addComponent(new Label("No users found."));
+                panel.addComponent(new Label("No users found.")
+                        .setLayoutData(GridLayout.createLayoutData(
+                                GridLayout.Alignment.CENTER,
+                                GridLayout.Alignment.CENTER,
+                                true,
+                                false
+                        )));
             } else {
                 for (User user : users) {
                     panel.addComponent(new Label(String.format("ID: %d | Username: %s | Email: %s | Role: %s",
-                            user.getUser_id(), user.getUsername(), user.getEmail(), user.getRole())));
+                            user.getUser_id(), user.getUsername(), user.getEmail(), user.getRole()))
+                            .setLayoutData(GridLayout.createLayoutData(
+                                    GridLayout.Alignment.FILL,
+                                    GridLayout.Alignment.CENTER,
+                                    true,
+                                    false
+                            )));
                 }
             }
         } catch (Exception e) {
-            panel.addComponent(new Label("Error retrieving users: " + e.getMessage()));
+            panel.addComponent(new Label("Error retrieving users: " + e.getMessage())
+                    .setLayoutData(GridLayout.createLayoutData(
+                            GridLayout.Alignment.CENTER,
+                            GridLayout.Alignment.CENTER,
+                            true,
+                            false
+                    )));
         }
+
+        Button backButton = new Button("Back", this::showAdminMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false
+        ));
+        panel.addComponent(backButton);
 
         window.setComponent(panel);
         gui.addWindowAndWait(window);
@@ -479,14 +1269,46 @@ public class EcommApp {
         }
 
         Window window = new BasicWindow("Error");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
         currentWindow = window;
+
         Panel panel = new Panel();
         panel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true,
+                        false,
+                        5,
+                        3
+                )
+        );
 
-        panel.addComponent(new Label(message));
-        panel.addComponent(new Button("OK", this::displayMainMenu));
+        Label errorLabel = new Label(message);
+        errorLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(errorLabel);
+
+        Button okButton = new Button("OK", this::displayMainMenu);
+        okButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(okButton);
 
         window.setComponent(panel);
+        window.setSize(MEDIUM_WINDOW_SIZE);
         gui.addWindowAndWait(window);
     }
 }
