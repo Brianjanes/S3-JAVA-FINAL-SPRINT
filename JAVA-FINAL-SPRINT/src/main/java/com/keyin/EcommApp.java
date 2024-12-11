@@ -829,6 +829,17 @@ public class EcommApp {
         ));
         panel.addComponent(viewUsersButton);
 
+        Button viewProductsButton = new Button("View Products with Seller Details", this::viewAllProductsWithSellers);
+        viewProductsButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(viewProductsButton);
+
         Button updateUserButton = new Button("Update User", this::updateUserMenu);
         updateUserButton.setLayoutData(GridLayout.createLayoutData(
                 GridLayout.Alignment.CENTER,
@@ -839,6 +850,17 @@ public class EcommApp {
                 1
         ));
         panel.addComponent(updateUserButton);
+
+        Button deleteUserButton = new Button("Delete User", this::deleteUser);
+        deleteUserButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true,
+                false,
+                1,
+                1
+        ));
+        panel.addComponent(deleteUserButton);
 
         Button logoutButton = new Button("Logout", () -> {
             currentUser = null;
@@ -1262,6 +1284,113 @@ public class EcommApp {
         window.setComponent(panel);
         gui.addWindowAndWait(window);
     }
+
+    private void viewAllProductsWithSellers() {
+        if (currentWindow != null) {
+            currentWindow.close();
+        }
+
+        Window window = new BasicWindow("All Products with Sellers");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
+        currentWindow = window;
+
+        Panel panel = new Panel(new LinearLayout(Direction.VERTICAL));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true, false, 5, 3
+                )
+        );
+
+        panel.addComponent(new Label("=== Products with Seller Details ===")
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER, GridLayout.Alignment.CENTER)));
+
+        try {
+            List<Product> products = productService.getAllProducts();
+            for (Product product : products) {
+                User seller = userService.getUserById(product.getSeller_id());
+                String sellerInfo = seller != null
+                        ? String.format("Seller: %s (Email: %s)", seller.getUsername(), seller.getEmail())
+                        : "Seller: Unknown";
+
+                panel.addComponent(new Label(String.format(
+                        "Product ID: %d | Name: %s | Price: $%.2f | Quantity: %d | %s",
+                        product.getProduct_id(), product.getName(), product.getPrice(), product.getQuantity(), sellerInfo
+                )));
+            }
+        } catch (Exception e) {
+            panel.addComponent(new Label("Error retrieving products: " + e.getMessage()));
+        }
+
+        Button backButton = new Button("Back", this::showAdminMenu);
+        backButton.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 1, 1
+        ));
+        panel.addComponent(backButton);
+
+        window.setComponent(panel);
+        gui.addWindowAndWait(window);
+    }
+
+    private void deleteUser() {
+        if (currentWindow != null) {
+            currentWindow.close();
+        }
+
+        Window window = new BasicWindow("Delete User");
+        window.setHints(List.of(Window.Hint.CENTERED, Window.Hint.FIT_TERMINAL_WINDOW));
+        currentWindow = window;
+
+        Panel panel = new Panel(new GridLayout(2));
+        panel.setLayoutData(
+                GridLayout.createLayoutData(
+                        GridLayout.Alignment.CENTER,
+                        GridLayout.Alignment.CENTER,
+                        true, false, 5, 3
+                )
+        );
+
+        panel.addComponent(new Label("Enter User ID:"));
+        TextBox userIdBox = new TextBox(new TerminalSize(30, 1));
+        panel.addComponent(userIdBox);
+
+        Label statusLabel = new Label("");
+        statusLabel.setLayoutData(GridLayout.createLayoutData(
+                GridLayout.Alignment.CENTER,
+                GridLayout.Alignment.CENTER,
+                true, false, 2, 1
+        ));
+        panel.addComponent(statusLabel);
+
+        Button deleteButton = new Button("Delete", () -> {
+            try {
+                int userId = Integer.parseInt(userIdBox.getText());
+                boolean success = userService.deleteUser(userId);
+
+                if (success) {
+                    statusLabel.setText("User deleted successfully!");
+                } else {
+                    statusLabel.setText("Failed to delete user. User ID may not exist.");
+                }
+            } catch (NumberFormatException e) {
+                statusLabel.setText("Invalid User ID format!");
+            } catch (Exception e) {
+                statusLabel.setText("Error: " + e.getMessage());
+            }
+        });
+
+        Button backButton = new Button("Back", this::showAdminMenu);
+
+        panel.addComponent(deleteButton);
+        panel.addComponent(backButton);
+
+        window.setComponent(panel);
+        gui.addWindowAndWait(window);
+    }
+
 
     private void showErrorMessage(String message) {
         if (currentWindow != null) {
