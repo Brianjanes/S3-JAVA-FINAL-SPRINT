@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Welcome to our Final Sprint project for Advanced Programming and Java at Keyin College in St. John's, NL, Canada. This console-based E-Commerce platform is designed to simulate an online marketplace where users can register as buyers, sellers, or admins. The platform provides functionality for browsing products, managing listings, and performing administrative tasks.
+Welcome to our Final Sprint project for Advanced Programming and Java at Keyin College in St. John's, NL, Canada. This console-based E-Commerce platform is designed to simulate an online marketplace where users can register as buyers, sellers, or admins. The platform provides functionality for browsing products, managing listings, and performing administrative tasks. We chose to give our project a retro twist by going with a simple old-school GUI instead of a standard console menu.
 
 ---
 
@@ -35,17 +35,14 @@ Welcome to our Final Sprint project for Advanced Programming and Java at Keyin C
 ## User Documentation
 
 ### Getting Started
-1. Launch the application by running the main class `EcommApp`.
+1. Launch the application by running the main class `EcommApp`. We recommend using IntelliJ.
 2. Register as a new user or log in using existing credentials.
-3. Navigate the menu based on your role:
+
+### Menu Navigation
+Navigate the menu based on your role:
    - Buyers can browse and search products.
    - Sellers can manage their product listings.
    - Admins can manage users and view detailed product listings.
-
-### Menu Navigation
-Each menu displays clear options:
-- Use numeric inputs to select options.
-- Follow on-screen prompts for additional input when required.
 
 ### Class Diagram
 The relationships between the main classes are:
@@ -66,35 +63,72 @@ ProductService <>---- ProductDAO
 
 ## Development Documentation
 
-### Code Structure
+### Directory Structure
 
-```plaintext
-src/
-|-- com.keyin/
-    |-- User/
-    |-- Roles/
-    |-- Products/
-    |-- EcommApp.java
-```
-- **User:** Contains user-related classes, DAOs, and services.
-- **Roles:** Implements role-specific functionalities.
-- **Products:** Handles product-related operations.
+JAVA-FINAL-SPRINT [ecommerce-platform]
+├── .idea
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   └── com.keyin
+│   │   │       ├── Database
+│   │   │       │   ├── DatabaseConfig
+│   │   │       │   └── DatabaseConnectionTest
+│   │   │       ├── Products
+│   │   │       │   ├── Product
+│   │   │       │   ├── ProductDAO
+│   │   │       │   └── ProductService
+│   │   │       ├── Roles
+│   │   │       │   ├── Admin
+│   │   │       │   ├── Buyer
+│   │   │       │   └── Seller
+│   │   │       ├── User
+│   │   │       │   ├── User
+│   │   │       │   ├── UserDAO
+│   │   │       │   ├── UserService
+│   │   │       │   └── UserSystemTest
+│   │   │       └── EcommApp
+│   │   └── resources
+│   │       └── SQL
+│   │           ├── create.sql
+│   │           └── modifiedCreate.sql
+├── test
+│   ├── java
+│   │   └── com.keyin.Products
+│   │       └── ProductSystemTest
+├── target
+├── .gitignore
+├── pom.xml
+└── External Libraries
 
 ### Dependencies
 The project uses the following dependencies:
 - [Lanterna](https://github.com/mabe02/lanterna) for the console UI.
 - [BCrypt](https://www.mindrot.org/projects/jBCrypt/) for password encryption.
 - [PostgreSQL JDBC Driver](https://jdbc.postgresql.org/) for database connectivity.
+- [JUnit](https://junit.org/) for unit testing.
 
 ### Build Instructions
 1. Ensure Maven is installed and configured.
 2. Navigate to the project directory.
-3. Run `mvn clean install` to compile the project and resolve dependencies.
+3. Run `mvn clean install` or `mvn clean install -DskipTests` to compile the project and resolve dependencies.
+
+### Development Guidelines
+- Follow Java naming conventions:
+  - PascalCase for classes
+  - camelCase for methods and variables
+- Use Javadocs for all public classes and methods
+- Modularize functionality into logical packages
 
 ### Testing
 Unit tests are implemented using JUnit. To run tests:
 1. Execute `mvn test` in the terminal.
 2. Review the test results for functionality verification.
+
+### Documentation
+To generate project Javadocs:
+1. Run `mvn javadoc:javadoc`
+2. Open the generated documentation at `target/site/apidocs/index.html`
 
 ---
 
@@ -108,7 +142,7 @@ Unit tests are implemented using JUnit. To run tests:
 ### Database Setup
 1. Execute the following SQL script to create and populate the database:
 
-https://github.com/Brianjanes/S3-JAVA-FINAL-SPRINT/blob/main/JAVA-FINAL-SPRINT/src/main/resources/SQL/modifiedCreate.sql
+[Database Initialization Script](https://github.com/Brianjanes/S3-JAVA-FINAL-SPRINT/blob/main/JAVA-FINAL-SPRINT/src/main/resources/SQL/modifiedCreate.sql)
 
 ### Running the Application
 1. Ensure the PostgreSQL server is running and accessible.
@@ -118,7 +152,7 @@ https://github.com/Brianjanes/S3-JAVA-FINAL-SPRINT/blob/main/JAVA-FINAL-SPRINT/s
    db.username=your_username
    db.password=your_password
    ```
-6. Execute `java -jar target/EcommApp.jar` to start the application.
+3. Execute `java -jar target/EcommApp.jar` to start the application.
 
 ### Deployment on Another IDE
 1. Import the project as a Maven project.
@@ -137,6 +171,3 @@ https://github.com/Brianjanes/S3-JAVA-FINAL-SPRINT/blob/main/JAVA-FINAL-SPRINT/s
 - **Kyle Hollett**
 - **Brad Ayers**
 - **Brian Janes**
-
-
-
