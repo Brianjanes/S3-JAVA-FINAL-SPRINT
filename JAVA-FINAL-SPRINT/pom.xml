@@ -37,6 +37,7 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Lanterna for layout -->
         <dependency>
             <groupId>com.googlecode.lanterna</groupId>
             <artifactId>lanterna</artifactId>
